@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "lib": ["es2021", "dom"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}
