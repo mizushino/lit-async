@@ -1,7 +1,8 @@
 import {html, css, LitElement} from 'lit';
-import {customElement} from 'lit/decorators.js';
+import {customElement, property} from 'lit/decorators.js';
 import {track} from '../src/track.js';
 import {loading} from '../src/loading.js';
+import {styleMap} from 'lit/directives/style-map.js';
 
 @customElement('lit-async-examples')
 export class LitAsyncExamples extends LitElement {
@@ -10,6 +11,11 @@ export class LitAsyncExamples extends LitElement {
       border: 1px solid black;
       padding: 1em;
       margin: 1em 0;
+    }
+
+    .demo-box {
+      transition: background-color 0.5s ease-in-out;
+      padding: 1em;
     }
 
     h2 {
@@ -30,17 +36,28 @@ export class LitAsyncExamples extends LitElement {
     }
   `;
 
-  myPromise = new Promise((resolve) => setTimeout(() => resolve('Hello from a promise!'), 1000));
+  myPromise = new Promise((resolve) =>
+    setTimeout(() => resolve('Hello from a promise!'), 1000)
+  );
 
   async fetch() {
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     return 'Data loaded!';
   }
 
   async *count() {
     for (let i = 1; ; i++) {
       yield i;
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
+
+  async *colors() {
+    const colors = ['lightyellow', 'lightpink', 'lightgreen', 'lightblue', 'lightcyan'];
+    let i = 0;
+    for (;;) {
+      yield colors[i++ % colors.length];
+      await new Promise((r) => setTimeout(r, 1000));
     }
   }
 
@@ -49,17 +66,28 @@ export class LitAsyncExamples extends LitElement {
       <div>
         <h2>Common Definitions</h2>
         <p>The following functions and properties are defined on the component for use in the examples below.</p>
-        <pre><code>myPromise = new Promise((resolve) => setTimeout(() => resolve('Hello from a promise!'), 1000));
+        <pre><code>const myPromise = new Promise((resolve) =>
+  setTimeout(() => resolve('Hello from a promise!'), 3000)
+);
 
-async fetch() {
+async function fetch() {
   await new Promise(resolve => setTimeout(resolve, 3000));
   return 'Data loaded!';
 }
 
-async *count() {
+async function *count() {
   for (let i = 1; ; i++) {
     yield i;
     await new Promise(r => setTimeout(r, 1000));
+  }
+}
+  
+async function *colors() {
+  const colors = ['lightyellow', 'lightpink', 'lightgreen', 'lightblue', 'lightcyan'];
+  let i = 0;
+  for (;;) {
+    yield colors[i++ % colors.length];
+    await new Promise((r) => setTimeout(r, 1000));
   }
 }</code></pre>
       </div>
@@ -69,19 +97,10 @@ async *count() {
   renderBasicTrack() {
     return html`
       <div>
-        <h2>Basic track usage</h2>
-        ${track(this.myPromise)}
-        <pre><code>html\`\${track(this.myPromise)}\`</code></pre>
-      </div>
-    `;
-  }
-
-  renderTrackWithLoading() {
-    return html`
-      <div>
-        <h2>track with loading</h2>
-        ${track(loading(this.fetch()))}
-        <pre><code>html\`\${track(loading(this.fetch()))}\`</code></pre>
+        <h2>Child Content</h2>
+        <p>Render the resolved value of a promise directly into the DOM.</p>
+        <p>Value: ${track(this.myPromise)}</p>
+        <pre><code>html\`Value: \${track(this.myPromise)}\`</code></pre>
       </div>
     `;
   }
@@ -89,8 +108,12 @@ async *count() {
   renderTrackWithAsyncGenerator() {
     return html`
       <div>
-        <h2>track with an async generator</h2>
-        Count: ${track(this.count())}
+        <h2>with Async Generator</h2>
+        <p>
+          <code>track</code> also works with async generators, re-rendering
+          whenever the generator yields a new value.
+        </p>
+        <p>Count: ${track(this.count())}</p>
         <pre><code>html\`Count: \${track(this.count())}\`</code></pre>
       </div>
     `;
@@ -99,9 +122,57 @@ async *count() {
   renderTrackWithTransform() {
     return html`
       <div>
-        <h2>track with a transform</h2>
-        Count * 2: ${track(this.count(), (value) => (value as number) * 2)}
+        <h2>with Transform Function</h2>
+        <p>
+          Provide a second argument to transform the resolved/yielded value before
+          rendering.
+        </p>
+        <p>
+          Count * 2:
+          ${track(this.count(), (value) => (value as number) * 2)}
+        </p>
         <pre><code>html\`Count * 2: \${track(this.count(), (value) => value * 2)}\`</code></pre>
+      </div>
+    `;
+  }
+
+  renderTrackWithAttribute() {
+    return html`
+      <div>
+        <h2>Attribute</h2>
+        <p>
+          You can bind an async generator to an element's attribute.
+          Lit handles this efficiently.
+        </p>
+
+        <div
+          class="demo-box"
+          style=${track(this.colors(), (color) =>
+            styleMap({backgroundColor: color as string})
+          )}
+        >
+          This div's background color is set by an async generator.
+        </div>
+
+        <pre><code>style="background-color: \${track(this.colors())}"</code></pre>
+        or
+        <pre><code>style=\${track(this.colors(), (color) => \`background-color: \${color}\`)}</code></pre>
+        or
+        <pre><code>style=\${track(this.colors(), (color) => styleMap({backgroundColor: color as string}))}</code></pre>
+      </div>
+    `;
+  }
+
+  renderTrackWithLoading() {
+    return html`
+      <div>
+        <h2>Helper: <code>loading()</code></h2>
+        <p>
+          Wrap a promise with <code>loading()</code> to show a fallback value while
+          the promise is pending.
+        </p>
+        ${track(loading(this.fetch(), 'Fetching data...'))}
+        <pre><code>html\`\${track(loading(this.fetch(), 'Fetching data...'))}\`</code></pre>
       </div>
     `;
   }
@@ -111,9 +182,10 @@ async *count() {
       <h1>LitAsync Examples</h1>
       ${this.renderCommonCode()}
       ${this.renderBasicTrack()}
-      ${this.renderTrackWithLoading()}
       ${this.renderTrackWithAsyncGenerator()}
       ${this.renderTrackWithTransform()}
+      ${this.renderTrackWithAttribute()}
+      ${this.renderTrackWithLoading()}
     `;
   }
 }
