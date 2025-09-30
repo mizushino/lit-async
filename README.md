@@ -1,6 +1,15 @@
 # Lit-Async
 
+[![npm version](https://badge.fury.io/js/lit-async.svg)](https://www.npmjs.com/package/lit-async)
+[![npm downloads](https://img.shields.io/npm/dm/lit-async.svg)](https://www.npmjs.com/package/lit-async)
+
 A library of lit-html directives for handling async operations.
+
+**✨ Key Features:**
+- **Drop promises and async generators directly into templates** - No wrapper components needed
+- **Works everywhere** - Child content, attributes, and properties
+- **Share generators across multiple directives** - Cached values broadcast to all subscribers
+- **Type-safe** - Full TypeScript support with automatic type inference
 
 ## Installation
 
@@ -61,6 +70,8 @@ html`${track(myPromise)}`
 `track` also works with async generators, re-rendering whenever the generator yields a new value.
 
 **Important**: When using async generators with `track`, store the generator instance in a property to avoid creating new generators on each render. Creating a new generator on every render will cause resource leaks as old generators continue running.
+
+**Ownership Policy**: `track` does not own the async sources it receives. It will not call `return()` on generators or `abort()` on promises. When a directive is disconnected from the DOM, it simply unsubscribes and ignores future values. You are responsible for managing the lifecycle of your generators and promises.
 
 ```typescript
 // ✅ Good: Store generator instance
