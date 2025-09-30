@@ -134,7 +134,7 @@ _colors = this.colors();</code></pre>
         </p>
         <div class="demo-box">
           Count * 2:
-          ${track(this._count, (value) => (value as number) * 2)}
+          ${track(this._count, (value) => value * 2)}
         </div>
         <pre><code>html\`Count * 2: \${track(this._count, (value) => value * 2)}\`</code></pre>
       </div>
@@ -212,7 +212,7 @@ _colors = this.colors();</code></pre>
         <div class="demo-box">
           <p>First instance: ${track(this._count)}</p>
           <p>Second instance: ${track(this._count)}</p>
-          <p>With transform (×10): ${track(this._count, (v) => (v as number) * 10)}</p>
+          <p>With transform (×10): ${track(this._count, (v) => v * 10)}</p>
         </div>
         <pre><code>// All three track() directives use the same this._count generator
 html\`

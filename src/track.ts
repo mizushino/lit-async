@@ -7,12 +7,12 @@ import { isAsyncIterable, isPromise, type AsyncState } from './types.js';
 /**
  * A directive that renders the resolved value of a promise or async generator.
  */
-class TrackDirective extends AsyncDirective {
-  private state?: AsyncState<unknown>;
-  private transform: ((value: unknown) => unknown) | undefined;
+class TrackDirective<T = unknown> extends AsyncDirective {
+  private state?: AsyncState<T>;
+  private transform: ((value: T) => unknown) | undefined;
   private subscriber?: (value: unknown) => void;
 
-  render(state: AsyncState<unknown>, transform?: (value: unknown) => unknown): unknown {
+  render(state: AsyncState<T>, transform?: (value: T) => unknown): unknown {
     if (this.state !== state) {
       if (this.subscriber && isAsyncIterable(this.state)) {
         unsubscribe(this.state, this.subscriber);
@@ -35,7 +35,7 @@ class TrackDirective extends AsyncDirective {
             }
           });
       } else if (isAsyncIterable(state)) {
-        this.subscriber = (value: unknown) => {
+        this.subscriber = (value: T) => {
           if (this.state === state) {
             this.setValue(this.transform ? this.transform(value) : value);
           }
@@ -62,4 +62,9 @@ class TrackDirective extends AsyncDirective {
   }
 }
 
-export const track = directive(TrackDirective);
+const trackDirective = directive(TrackDirective);
+
+export const track = <T = unknown>(
+  state: AsyncState<T>,
+  transform?: (value: T) => unknown
+) => trackDirective(state, transform);
