@@ -53,7 +53,7 @@ export class LitAsyncExamples extends LitElement {
   }
 
   async *colors() {
-    const colors = ['lightyellow', 'lightpink', 'lightgreen', 'lightblue', 'lightcyan'];
+    const colors = ['lightyellow', 'lightpink', 'lightgreen', 'lightcyan'];
     let i = 0;
     for (;;) {
       yield colors[i++ % colors.length];
@@ -99,8 +99,8 @@ async function *colors() {
       <div>
         <h2>Child Content</h2>
         <p>Render the resolved value of a promise directly into the DOM.</p>
-        <p>Value: ${track(this.myPromise)}</p>
-        <pre><code>html\`Value: \${track(this.myPromise)}\`</code></pre>
+        <div class="demo-box">${track(this.myPromise)}</div>
+        <pre><code>html\`\${track(this.myPromise)}\`</code></pre>
       </div>
     `;
   }
@@ -113,7 +113,7 @@ async function *colors() {
           <code>track</code> also works with async generators, re-rendering
           whenever the generator yields a new value.
         </p>
-        <p>Count: ${track(this.count())}</p>
+        <div class="demo-box">Count: ${track(this.count())}</div>
         <pre><code>html\`Count: \${track(this.count())}\`</code></pre>
       </div>
     `;
@@ -127,10 +127,10 @@ async function *colors() {
           Provide a second argument to transform the resolved/yielded value before
           rendering.
         </p>
-        <p>
+        <div class="demo-box">
           Count * 2:
           ${track(this.count(), (value) => (value as number) * 2)}
-        </p>
+        </div>
         <pre><code>html\`Count * 2: \${track(this.count(), (value) => value * 2)}\`</code></pre>
       </div>
     `;
@@ -171,7 +171,9 @@ async function *colors() {
           Wrap a promise with <code>loading()</code> to show a fallback value while
           the promise is pending.
         </p>
-        ${track(loading(this.fetch(), 'Fetching data...'))}
+        <div class="demo-box">
+          ${track(loading(this.fetch(), 'Fetching data...'))}
+        </div>
         <pre><code>html\`\${track(loading(this.fetch(), 'Fetching data...'))}\`</code></pre>
       </div>
     `;
