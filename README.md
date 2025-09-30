@@ -138,6 +138,26 @@ class MyElement extends LitElement {
 }
 ```
 
+#### Shared Generator
+
+Multiple `track` directives can share the same generator instance. All instances will receive the same values simultaneously.
+
+```typescript
+class MyElement extends LitElement {
+  _count = count();
+
+  render() {
+    return html`
+      <p>First instance: ${track(this._count)}</p>
+      <p>Second instance: ${track(this._count)}</p>
+      <p>With transform (×10): ${track(this._count, (v) => v * 10)}</p>
+    `;
+  }
+}
+```
+
+All three `track()` directives will display the same count value at the same time. The generator's values are cached and broadcast to all subscribers.
+
 ### `loading`
 
 A helper function that wraps a promise with `loading()` to show a fallback value while the promise is pending.

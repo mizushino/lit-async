@@ -201,6 +201,29 @@ _colors = this.colors();</code></pre>
     `;
   }
 
+  renderSharedGenerator() {
+    return html`
+      <div>
+        <h2>Shared Generator</h2>
+        <p>
+          Multiple <code>track</code> directives can share the same generator instance.
+          All instances will receive the same values simultaneously.
+        </p>
+        <div class="demo-box">
+          <p>First instance: ${track(this._count)}</p>
+          <p>Second instance: ${track(this._count)}</p>
+          <p>With transform (×10): ${track(this._count, (v) => (v as number) * 10)}</p>
+        </div>
+        <pre><code>// All three track() directives use the same this._count generator
+html\`
+  &lt;p&gt;First instance: \${track(this._count)}&lt;/p&gt;
+  &lt;p&gt;Second instance: \${track(this._count)}&lt;/p&gt;
+  &lt;p&gt;With transform (×10): \${track(this._count, (v) => v * 10)}&lt;/p&gt;
+\`</code></pre>
+      </div>
+    `;
+  }
+
   render() {
     return html`
       <h1>LitAsync Examples</h1>
@@ -211,6 +234,7 @@ _colors = this.colors();</code></pre>
       ${this.renderTrackWithAttribute()}
       ${this.renderTrackWithProperty()}
       ${this.renderTrackWithLoading()}
+      ${this.renderSharedGenerator()}
     `;
   }
 }
