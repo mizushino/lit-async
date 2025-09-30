@@ -51,6 +51,7 @@ export class LitAsyncExamples extends LitElement {
       await new Promise((r) => setTimeout(r, 1000));
     }
   }
+  _count = this.count();
 
   async *colors() {
     const colors = ['lightyellow', 'lightpink', 'lightgreen', 'lightcyan'];
@@ -60,36 +61,40 @@ export class LitAsyncExamples extends LitElement {
       await new Promise((r) => setTimeout(r, 1000));
     }
   }
+  _colors = this.colors();
 
   renderCommonCode() {
     return html`
       <div>
         <h2>Common Definitions</h2>
         <p>The following functions and properties are defined on the component for use in the examples below.</p>
-        <pre><code>const myPromise = new Promise((resolve) =>
-  setTimeout(() => resolve('Hello from a promise!'), 3000)
+        <pre><code>myPromise = new Promise((resolve) =>
+  setTimeout(() => resolve('Hello from a promise!'), 1000)
 );
 
-async function fetch() {
+async fetch() {
   await new Promise(resolve => setTimeout(resolve, 3000));
   return 'Data loaded!';
 }
 
-async function *count() {
+async *count() {
   for (let i = 1; ; i++) {
     yield i;
     await new Promise(r => setTimeout(r, 1000));
   }
 }
-  
-async function *colors() {
-  const colors = ['lightyellow', 'lightpink', 'lightgreen', 'lightblue', 'lightcyan'];
+_count = this.count();
+
+async *colors() {
+  const colors = ['lightyellow', 'lightpink', 'lightgreen', 'lightcyan'];
   let i = 0;
   for (;;) {
     yield colors[i++ % colors.length];
     await new Promise((r) => setTimeout(r, 1000));
   }
-}</code></pre>
+}
+_colors = this.colors();</code></pre>
+        <p><strong>Note:</strong> The generator instances (<code>_count</code>, <code>_colors</code>) are stored as properties to avoid creating new generators on each render, which would cause resource leaks.</p>
       </div>
     `;
   }
@@ -113,8 +118,8 @@ async function *colors() {
           <code>track</code> also works with async generators, re-rendering
           whenever the generator yields a new value.
         </p>
-        <div class="demo-box">Count: ${track(this.count())}</div>
-        <pre><code>html\`Count: \${track(this.count())}\`</code></pre>
+        <div class="demo-box">Count: ${track(this._count)}</div>
+        <pre><code>html\`Count: \${track(this._count)}\`</code></pre>
       </div>
     `;
   }
@@ -129,9 +134,9 @@ async function *colors() {
         </p>
         <div class="demo-box">
           Count * 2:
-          ${track(this.count(), (value) => (value as number) * 2)}
+          ${track(this._count, (value) => (value as number) * 2)}
         </div>
-        <pre><code>html\`Count * 2: \${track(this.count(), (value) => value * 2)}\`</code></pre>
+        <pre><code>html\`Count * 2: \${track(this._count, (value) => value * 2)}\`</code></pre>
       </div>
     `;
   }
@@ -147,7 +152,7 @@ async function *colors() {
 
         <div
           class="demo-box"
-          style=${track(this.colors(), (color) =>
+          style=${track(this._colors, (color) =>
             styleMap({backgroundColor: color as string})
           )}
         >
@@ -155,11 +160,11 @@ async function *colors() {
         </div>
 
         <p>Using <code>styleMap</code>:</p>
-        <pre><code>html\`&lt;div style=\${track(this.colors(), (color) => styleMap({backgroundColor: color}))}&gt;...&lt;/div&gt;\`</code></pre>
+        <pre><code>html\`&lt;div style=\${track(this._colors, (color) => styleMap({backgroundColor: color}))}&gt;...&lt;/div&gt;\`</code></pre>
         <p>Or using string interpolation:</p>
-        <pre><code>html\`&lt;div style=\${track(this.colors(), (color) => \`background-color: \${color}\`)}&gt;...&lt;/div&gt;\`</code></pre>
+        <pre><code>html\`&lt;div style=\${track(this._colors, (color) => \`background-color: \${color}\`)}&gt;...&lt;/div&gt;\`</code></pre>
         <p>Or as a simple attribute:</p>
-        <pre><code>html\`&lt;div style="background-color: \${track(this.colors())}"&gt;...&lt;/div&gt;\`</code></pre>
+        <pre><code>html\`&lt;div style="background-color: \${track(this._colors)}"&gt;...&lt;/div&gt;\`</code></pre>
       </div>
     `;
   }
@@ -173,9 +178,9 @@ async function *colors() {
           element's property to the resolved/yielded value.
         </p>
         <div class="demo-box">
-          <input type="number" .value=${track(this.count())} readonly>
+          <input type="number" .value=${track(this._count)} readonly>
         </div>
-        <pre><code>html\`&lt;input type="number" .value=\${track(this.count())} readonly&gt;\`</code></pre>
+        <pre><code>html\`&lt;input type="number" .value=\${track(this._count)} readonly&gt;\`</code></pre>
       </div>
     `;
   }

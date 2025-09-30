@@ -60,8 +60,22 @@ html`${track(myPromise)}`
 
 `track` also works with async generators, re-rendering whenever the generator yields a new value.
 
+**Important**: When using async generators with `track`, store the generator instance in a property to avoid creating new generators on each render. Creating a new generator on every render will cause resource leaks as old generators continue running.
+
 ```typescript
-html`Count: ${track(count())}`
+// ✅ Good: Store generator instance
+class MyElement extends LitElement {
+  _count = count();
+
+  render() {
+    return html`Count: ${track(this._count)}`;
+  }
+}
+
+// ❌ Bad: Creates new generator each render
+render() {
+  return html`Count: ${track(count())}`;
+}
 ```
 
 #### With Transform Function
@@ -69,7 +83,13 @@ html`Count: ${track(count())}`
 Provide a second argument to transform the resolved/yielded value before rendering.
 
 ```typescript
-html`Count * 2: ${track(count(), (value) => value * 2)}`
+class MyElement extends LitElement {
+  _count = count();
+
+  render() {
+    return html`Count * 2: ${track(this._count, (value) => value * 2)}`;
+  }
+}
 ```
 
 #### Attribute
@@ -79,23 +99,29 @@ You can bind an async generator to an element's attribute. Lit handles this effi
 ```typescript
 import { styleMap } from 'lit/directives/style-map.js';
 
-html`
-  <div style=${track(colors(), (color) => styleMap({backgroundColor: color}))}>
-    This div's background color is set by an async generator.
-  </div>
-`
+class MyElement extends LitElement {
+  _colors = colors();
+
+  render() {
+    return html`
+      <div style=${track(this._colors, (color) => styleMap({backgroundColor: color}))}>
+        This div's background color is set by an async generator.
+      </div>
+    `;
+  }
+}
 ```
 
 Or using string interpolation:
 
 ```typescript
-html`<div style=${track(colors(), (color) => `background-color: ${color}`)}>...</div>`
+html`<div style=${track(this._colors, (color) => `background-color: ${color}`)}>...</div>`
 ```
 
 Or as a simple attribute:
 
 ```typescript
-html`<div style="background-color: ${track(colors())}">...</div>`
+html`<div style="background-color: ${track(this._colors)}">...</div>`
 ```
 
 #### Property
@@ -103,7 +129,13 @@ html`<div style="background-color: ${track(colors())}">...</div>`
 `track` can be used as a property directive to set an element's property to the resolved/yielded value.
 
 ```typescript
-html`<input type="number" .value=${track(count())} readonly>`
+class MyElement extends LitElement {
+  _count = count();
+
+  render() {
+    return html`<input type="number" .value=${track(this._count)} readonly>`;
+  }
+}
 ```
 
 ### `loading`
