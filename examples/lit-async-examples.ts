@@ -2,7 +2,6 @@ import {html, css, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {track} from '../src/track.js';
 import {loading} from '../src/loading.js';
-import {styleMap} from 'lit/directives/style-map.js';
 
 @customElement('lit-async-examples')
 export class LitAsyncExamples extends LitElement {
@@ -152,19 +151,12 @@ _colors = this.colors();</code></pre>
 
         <div
           class="demo-box"
-          style=${track(this._colors, (color) =>
-            styleMap({backgroundColor: color as string})
-          )}
+          style=${track(this._colors, (color) => `background-color: ${color}`)}
         >
           This div's background color is set by an async generator.
         </div>
 
-        <p>Using <code>styleMap</code>:</p>
-        <pre><code>html\`&lt;div style=\${track(this._colors, (color) => styleMap({backgroundColor: color}))}&gt;...&lt;/div&gt;\`</code></pre>
-        <p>Or using string interpolation:</p>
         <pre><code>html\`&lt;div style=\${track(this._colors, (color) => \`background-color: \${color}\`)}&gt;...&lt;/div&gt;\`</code></pre>
-        <p>Or as a simple attribute:</p>
-        <pre><code>html\`&lt;div style="background-color: \${track(this._colors)}"&gt;...&lt;/div&gt;\`</code></pre>
       </div>
     `;
   }

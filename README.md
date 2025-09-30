@@ -56,6 +56,10 @@ async function *colors() {
 
 A directive that renders the resolved value of a promise or an async generator.
 
+```typescript
+track<T>(state: Promise<T> | AsyncIterable<T> | T, transform?: (value: T) => unknown): unknown
+```
+
 **Ownership Policy**: `track` does not own the async sources it receives. It will not call `return()` on generators or `abort()` on promises. When disconnected from the DOM, it simply unsubscribes and ignores future values (via internal generation guard). You are responsible for managing the lifecycle of your async sources.
 
 **Error Handling**: If a promise rejects or an async generator throws, `track` logs the error to the console and renders `undefined`. The DOM content remains unchanged until a successful value arrives.
@@ -111,17 +115,13 @@ class MyElement extends LitElement {
 
 You can bind an async generator to an element's attribute. Lit handles this efficiently.
 
-**Note**: Attributes are stringified. For complex values (like styles), use directives like `styleMap` or transform the value to a string.
-
 ```typescript
-import { styleMap } from 'lit/directives/style-map.js';
-
 class MyElement extends LitElement {
   _colors = colors();
 
   render() {
     return html`
-      <div style=${track(this._colors, (color) => styleMap({backgroundColor: color}))}>
+      <div style=${track(this._colors, (color) => `background-color: ${color}`)}>
         This div's background color is set by an async generator.
       </div>
     `;
@@ -129,30 +129,15 @@ class MyElement extends LitElement {
 }
 ```
 
-Or using string interpolation:
-
-```typescript
-html`<div style=${track(this._colors, (color) => `background-color: ${color}`)}>...</div>`
-```
-
-Or as a simple attribute:
-
-```typescript
-html`<div style="background-color: ${track(this._colors)}">...</div>`
-```
-
 #### Property
 
 `track` can be used as a property directive to set an element's property to the resolved/yielded value.
 
-**Note**: Properties accept any type. For `<input>`, the `.value` property expects a string, so numeric values will be automatically converted to strings by the browser.
-
 ```typescript
 class MyElement extends LitElement {
-  _count = count(); // yields numbers
+  _count = count();
 
   render() {
-    // .value property receives numbers, browser converts to string
     return html`<input type="number" .value=${track(this._count)} readonly>`;
   }
 }
@@ -178,9 +163,15 @@ class MyElement extends LitElement {
 
 All three `track()` directives will display the same count value at the same time. The generator's values are cached and broadcast to all subscribers.
 
+**Value Replay**: When a new `track()` subscribes to an already-running generator, it immediately receives the last yielded value (if any) and then continues to receive new values. This ensures all subscribers stay synchronized without waiting for the next `yield`.
+
 ### `loading`
 
 A helper function that wraps a promise with `loading()` to show a fallback value while the promise is pending.
+
+```typescript
+loading<T>(state: Promise<T> | AsyncIterable<T> | T, loadingValue: unknown, transform?: (value: T) => unknown): AsyncIterable<unknown>
+```
 
 ```typescript
 import { html } from 'lit';
@@ -196,13 +187,3 @@ const loadingTemplate = html`<span>Please wait...</span>`;
 
 html`${track(loading(fetchData(), loadingTemplate))}`
 ```
-
-## Examples
-
-Run the development server to see interactive examples:
-
-```bash
-npm run dev
-```
-
-Then open `http://localhost:3000` in your browser.
