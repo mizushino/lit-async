@@ -2,6 +2,8 @@
 
 [![npm version](https://badge.fury.io/js/lit-async.svg)](https://www.npmjs.com/package/lit-async)
 [![npm downloads](https://img.shields.io/npm/dm/lit-async.svg)](https://www.npmjs.com/package/lit-async)
+![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)
+![Tree Shakeable](https://img.shields.io/badge/Tree%20Shakeable-Yes-brightgreen)
 
 A library of lit-html directives for handling async operations.
 
@@ -28,7 +30,7 @@ const myPromise = new Promise((resolve) =>
   setTimeout(() => resolve('Hello from a promise!'), 1000)
 );
 
-async function fetch() {
+async function fetchData() {
   await new Promise(resolve => setTimeout(resolve, 3000));
   return 'Data loaded!';
 }
@@ -184,7 +186,7 @@ A helper function that wraps a promise with `loading()` to show a fallback value
 import { html } from 'lit';
 import { track, loading } from 'lit-async';
 
-html`${track(loading(fetch(), 'Fetching data...'))}`
+html`${track(loading(fetchData(), 'Fetching data...'))}`
 ```
 
 You can also provide a custom template for the loading state:
@@ -192,7 +194,7 @@ You can also provide a custom template for the loading state:
 ```typescript
 const loadingTemplate = html`<span>Please wait...</span>`;
 
-html`${track(loading(fetch(), loadingTemplate))}`
+html`${track(loading(fetchData(), loadingTemplate))}`
 ```
 
 ## Examples

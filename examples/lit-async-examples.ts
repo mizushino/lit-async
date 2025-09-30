@@ -40,7 +40,7 @@ export class LitAsyncExamples extends LitElement {
     setTimeout(() => resolve('Hello from a promise!'), 1000)
   );
 
-  async fetch() {
+  async fetchData() {
     await new Promise((resolve) => setTimeout(resolve, 3000));
     return 'Data loaded!';
   }
@@ -72,7 +72,7 @@ export class LitAsyncExamples extends LitElement {
   setTimeout(() => resolve('Hello from a promise!'), 1000)
 );
 
-async fetch() {
+async fetchData() {
   await new Promise(resolve => setTimeout(resolve, 3000));
   return 'Data loaded!';
 }
@@ -194,9 +194,9 @@ _colors = this.colors();</code></pre>
           the promise is pending.
         </p>
         <div class="demo-box">
-          ${track(loading(this.fetch(), 'Fetching data...'))}
+          ${track(loading(this.fetchData(), 'Fetching data...'))}
         </div>
-        <pre><code>html\`\${track(loading(this.fetch(), 'Fetching data...'))}\`</code></pre>
+        <pre><code>html\`\${track(loading(this.fetchData(), 'Fetching data...'))}\`</code></pre>
       </div>
     `;
   }
