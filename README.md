@@ -54,6 +54,10 @@ async function *colors() {
 
 A directive that renders the resolved value of a promise or an async generator.
 
+**Ownership Policy**: `track` does not own the async sources it receives. It will not call `return()` on generators or `abort()` on promises. When disconnected from the DOM, it simply unsubscribes and ignores future values (via internal generation guard). You are responsible for managing the lifecycle of your async sources.
+
+**Error Handling**: If a promise rejects or an async generator throws, `track` logs the error to the console and renders `undefined`. The DOM content remains unchanged until a successful value arrives.
+
 #### Child Content
 
 Render the resolved value of a promise directly into the DOM.
@@ -70,8 +74,6 @@ html`${track(myPromise)}`
 `track` also works with async generators, re-rendering whenever the generator yields a new value.
 
 **Important**: When using async generators with `track`, store the generator instance in a property to avoid creating new generators on each render. Creating a new generator on every render will cause resource leaks as old generators continue running.
-
-**Ownership Policy**: `track` does not own the async sources it receives. It will not call `return()` on generators or `abort()` on promises. When a directive is disconnected from the DOM, it simply unsubscribes and ignores future values. You are responsible for managing the lifecycle of your generators and promises.
 
 ```typescript
 // ✅ Good: Store generator instance
@@ -107,6 +109,8 @@ class MyElement extends LitElement {
 
 You can bind an async generator to an element's attribute. Lit handles this efficiently.
 
+**Note**: Attributes are stringified. For complex values (like styles), use directives like `styleMap` or transform the value to a string.
+
 ```typescript
 import { styleMap } from 'lit/directives/style-map.js';
 
@@ -139,11 +143,14 @@ html`<div style="background-color: ${track(this._colors)}">...</div>`
 
 `track` can be used as a property directive to set an element's property to the resolved/yielded value.
 
+**Note**: Properties accept any type. For `<input>`, the `.value` property expects a string, so numeric values will be automatically converted to strings by the browser.
+
 ```typescript
 class MyElement extends LitElement {
-  _count = count();
+  _count = count(); // yields numbers
 
   render() {
+    // .value property receives numbers, browser converts to string
     return html`<input type="number" .value=${track(this._count)} readonly>`;
   }
 }
