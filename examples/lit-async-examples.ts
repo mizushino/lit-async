@@ -154,11 +154,28 @@ async function *colors() {
           This div's background color is set by an async generator.
         </div>
 
-        <pre><code>style="background-color: \${track(this.colors())}"</code></pre>
-        or
-        <pre><code>style=\${track(this.colors(), (color) => \`background-color: \${color}\`)}</code></pre>
-        or
-        <pre><code>style=\${track(this.colors(), (color) => styleMap({backgroundColor: color as string}))}</code></pre>
+        <p>Using <code>styleMap</code>:</p>
+        <pre><code>html\`&lt;div style=\${track(this.colors(), (color) => styleMap({backgroundColor: color}))}&gt;...&lt;/div&gt;\`</code></pre>
+        <p>Or using string interpolation:</p>
+        <pre><code>html\`&lt;div style=\${track(this.colors(), (color) => \`background-color: \${color}\`)}&gt;...&lt;/div&gt;\`</code></pre>
+        <p>Or as a simple attribute:</p>
+        <pre><code>html\`&lt;div style="background-color: \${track(this.colors())}"&gt;...&lt;/div&gt;\`</code></pre>
+      </div>
+    `;
+  }
+
+  renderTrackWithProperty() {
+    return html`
+      <div>
+        <h2>Property</h2>
+        <p>
+          <code>track</code> can be used as a property directive to set an
+          element's property to the resolved/yielded value.
+        </p>
+        <div class="demo-box">
+          <input type="number" .value=${track(this.count())} readonly>
+        </div>
+        <pre><code>html\`&lt;input type="number" .value=\${track(this.count())} readonly&gt;\`</code></pre>
       </div>
     `;
   }
@@ -187,6 +204,7 @@ async function *colors() {
       ${this.renderTrackWithAsyncGenerator()}
       ${this.renderTrackWithTransform()}
       ${this.renderTrackWithAttribute()}
+      ${this.renderTrackWithProperty()}
       ${this.renderTrackWithLoading()}
     `;
   }

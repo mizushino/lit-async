@@ -98,6 +98,14 @@ Or as a simple attribute:
 html`<div style="background-color: ${track(colors())}">...</div>`
 ```
 
+#### Property
+
+`track` can be used as a property directive to set an element's property to the resolved/yielded value.
+
+```typescript
+html`<input type="number" .value=${track(count())} readonly>`
+```
+
 ### `loading`
 
 A helper function that wraps a promise with `loading()` to show a fallback value while the promise is pending.
