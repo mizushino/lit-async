@@ -41,7 +41,7 @@ Access the examples at `http://localhost:3000` to see live demos of the directiv
 - Works with promises, async iterables, or sync values
 - Accepts custom loading template (defaults to "Loading...")
 
-**src/utils.ts** - Type guards and shared types
+**src/types.ts** - Type definitions and type guards
 - `AsyncState<T>` type: union of `Promise<T>`, `AsyncIterable<T>`, or `T`
 - `isPromise()`: type guard for promises
 - `isAsyncIterable()`: type guard for async iterables/generators

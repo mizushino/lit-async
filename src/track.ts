@@ -1,7 +1,7 @@
 import { noChange } from 'lit';
 import { AsyncDirective, directive } from 'lit/async-directive.js';
 
-import { isAsyncIterable, isPromise, type AsyncState } from './utils';
+import { isAsyncIterable, isPromise, type AsyncState } from './types';
 
 /**
  * A directive that renders the resolved value of a promise or an async generator.

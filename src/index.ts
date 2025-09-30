@@ -1,3 +1,3 @@
 export * from './loading';
 export * from './track';
-export * from './utils';
+export * from './types';

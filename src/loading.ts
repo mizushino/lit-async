@@ -1,6 +1,6 @@
 import type { TemplateResult } from 'lit';
 
-import { isAsyncIterable, isPromise, type AsyncState } from './utils';
+import { isAsyncIterable, isPromise, type AsyncState } from './types';
 
 /**
  * Wraps an async operation in an async generator that first yields
