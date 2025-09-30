@@ -12,7 +12,10 @@ lit-async is a library of lit-html directives for handling async operations. It 
 ```bash
 npm run build
 ```
-Compiles TypeScript source files in `src/` to JavaScript using `tsc`.
+Compiles TypeScript source files from `src/` to `dist/` using `tsc`. Generates:
+- JavaScript files (`.js`)
+- Type declaration files (`.d.ts`)
+- Source maps (`.js.map`, `.d.ts.map`)
 
 ### Development Server
 ```bash
@@ -24,6 +27,15 @@ Starts the Web Dev Server on port 3000 (configurable via `PORT` environment vari
 - Serves `index.html` which loads the examples component
 
 Access the examples at `http://localhost:3000` to see live demos of the directives.
+
+### Publishing
+
+Before publishing to npm:
+1. Ensure version is updated in `package.json`
+2. Run `npm run build` to verify build succeeds
+3. Run `npm publish` (the `prepublishOnly` script will automatically run the build)
+
+The `files` field in `package.json` specifies what gets published: `dist/`, `src/`, `README.md`, and `LICENSE`.
 
 ## Architecture
 
