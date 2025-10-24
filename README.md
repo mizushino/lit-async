@@ -25,7 +25,7 @@ npm install lit-async
 
 The following functions and properties are used in the examples below:
 
-```typescript
+```ts
 const myPromise = new Promise((resolve) =>
   setTimeout(() => resolve('Hello from a promise!'), 1000)
 );
@@ -56,7 +56,7 @@ async function *colors() {
 
 A directive that renders the resolved value of a promise or an async generator.
 
-```typescript
+```ts
 track<T>(state: Promise<T> | AsyncIterable<T> | T, transform?: (value: T) => unknown): unknown
 ```
 
@@ -68,7 +68,7 @@ track<T>(state: Promise<T> | AsyncIterable<T> | T, transform?: (value: T) => unk
 
 Render the resolved value of a promise directly into the DOM.
 
-```typescript
+```ts
 import { html } from 'lit';
 import { track } from 'lit-async';
 
@@ -81,7 +81,7 @@ html`${track(myPromise)}`
 
 **Important**: When using async generators with `track`, store the generator instance in a property to avoid creating new generators on each render. Creating a new generator on every render will cause resource leaks as old generators continue running.
 
-```typescript
+```ts
 // ✅ Good: Store generator instance
 class MyElement extends LitElement {
   _count = count();
@@ -101,7 +101,7 @@ render() {
 
 Provide a second argument to transform the resolved/yielded value before rendering.
 
-```typescript
+```ts
 class MyElement extends LitElement {
   _count = count();
 
@@ -115,7 +115,7 @@ class MyElement extends LitElement {
 
 You can bind an async generator to an element's attribute. Lit handles this efficiently.
 
-```typescript
+```ts
 class MyElement extends LitElement {
   _colors = colors();
 
@@ -133,7 +133,7 @@ class MyElement extends LitElement {
 
 `track` can be used as a property directive to set an element's property to the resolved/yielded value.
 
-```typescript
+```ts
 class MyElement extends LitElement {
   _count = count();
 
@@ -147,7 +147,7 @@ class MyElement extends LitElement {
 
 Multiple `track` directives can share the same generator instance. All instances will receive the same values simultaneously.
 
-```typescript
+```ts
 class MyElement extends LitElement {
   _count = count();
 
@@ -169,11 +169,11 @@ All three `track()` directives will display the same count value at the same tim
 
 A helper function that wraps a promise with `loading()` to show a fallback value while the promise is pending.
 
-```typescript
+```ts
 loading<T>(state: Promise<T> | AsyncIterable<T> | T, loadingValue: unknown, transform?: (value: T) => unknown): AsyncIterable<unknown>
 ```
 
-```typescript
+```ts
 import { html } from 'lit';
 import { track, loading } from 'lit-async';
 
@@ -182,7 +182,7 @@ html`${track(loading(fetchData(), 'Fetching data...'))}`
 
 You can also provide a custom template for the loading state:
 
-```typescript
+```ts
 const loadingTemplate = html`<span>Please wait...</span>`;
 
 html`${track(loading(fetchData(), loadingTemplate))}`
