@@ -1,6 +1,7 @@
 import {html, css, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {track} from '../src/track.js';
+import {sync} from '../src/decorator.js';
 import {loading} from '../src/loading.js';
 
 @customElement('lit-async-examples')
@@ -61,6 +62,25 @@ export class LitAsyncExamples extends LitElement {
     }
   }
   _colors = this.colors();
+
+  // Decorator examples
+  @sync(function () {
+    return (async function* () {
+      for (let i = 100; ; i++) {
+        yield i;
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+    })();
+  })
+  accessor decoratedCount: number | undefined;
+
+  @sync(
+    () =>
+      new Promise<string>((resolve) =>
+        setTimeout(() => resolve('Decorator Promise Resolved!'), 2000)
+      )
+  )
+  accessor decoratedPromise: string | undefined;
 
   renderCommonCode() {
     return html`
@@ -216,6 +236,53 @@ html\`
     `;
   }
 
+  renderDecorator() {
+    return html`
+      <div>
+        <h2>Decorator: <code>@sync()</code></h2>
+        <p>
+          Use the <code>@sync</code> decorator to automatically update a property
+          with values from a Promise or AsyncIterable. The decorator accepts a factory
+          function that returns the async state. <strong>Requires <code>accessor</code> keyword.</strong>
+        </p>
+        <div class="demo-box">
+          <p>Decorated async generator: ${this.decoratedCount ?? 'Loading...'}</p>
+          <p>Decorated promise: ${this.decoratedPromise ?? 'Loading...'}</p>
+        </div>
+        <pre><code>import { sync } from 'lit-async';
+
+class MyElement extends LitElement {
+  // Sync an async generator
+  @sync(function() {
+    return (async function*() {
+      for (let i = 100; ; i++) {
+        yield i;
+        await new Promise(r => setTimeout(r, 1500));
+      }
+    })();
+  })
+  accessor decoratedCount: number | undefined;
+
+  // Sync a promise
+  @sync(() =>
+    new Promise(resolve =>
+      setTimeout(() => resolve('Decorator Promise Resolved!'), 2000)
+    )
+  )
+  accessor decoratedPromise: string | undefined;
+
+  render() {
+    return html\`
+      &lt;p&gt;Count: \${this.decoratedCount ?? 'Loading...'}&lt;/p&gt;
+      &lt;p&gt;Promise: \${this.decoratedPromise ?? 'Loading...'}&lt;/p&gt;
+    \`;
+  }
+}</code></pre>
+        <p><strong>Note:</strong> The decorator automatically subscribes when the element is connected to the DOM and cleans up when disconnected.</p>
+      </div>
+    `;
+  }
+
   render() {
     return html`
       <h1>LitAsync Examples</h1>
@@ -227,6 +294,7 @@ html\`
       ${this.renderTrackWithProperty()}
       ${this.renderTrackWithLoading()}
       ${this.renderSharedGenerator()}
+      ${this.renderDecorator()}
     `;
   }
 }

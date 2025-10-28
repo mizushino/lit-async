@@ -11,6 +11,7 @@ class TrackDirective<T = unknown> extends AsyncDirective {
   private state?: AsyncState<T>;
   private transform: ((value: T) => unknown) | undefined;
   private subscriber?: (value: unknown) => void;
+  private lastValue: unknown = noChange;
 
   render(state: AsyncState<T>, transform?: (value: T) => unknown): unknown {
     if (this.state !== state) {
@@ -25,28 +26,33 @@ class TrackDirective<T = unknown> extends AsyncDirective {
         state
           .then((value) => {
             if (this.state === state) {
-              this.setValue(this.transform ? this.transform(value) : value);
+              const transformed = this.transform ? this.transform(value) : value;
+              this.lastValue = transformed;
+              this.setValue(transformed);
             }
           })
           .catch((error) => {
             console.error('Error resolving Promise:', error);
             if (this.state === state) {
+              this.lastValue = undefined;
               this.setValue(undefined);
             }
           });
       } else if (isAsyncIterable(state)) {
         this.subscriber = (value: T) => {
           if (this.state === state) {
-            this.setValue(this.transform ? this.transform(value) : value);
+            const transformed = this.transform ? this.transform(value) : value;
+            this.lastValue = transformed;
+            this.setValue(transformed);
           }
         };
         subscribe(state, this.subscriber);
       } else {
         return this.transform ? this.transform(state) : state;
       }
-      return noChange;
+      return this.lastValue;
     }
-    return noChange;
+    return this.lastValue;
   }
 
   disconnected(): void {

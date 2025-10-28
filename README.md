@@ -5,10 +5,11 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)
 ![Tree Shakeable](https://img.shields.io/badge/Tree%20Shakeable-Yes-brightgreen)
 
-A library of lit-html directives for handling async operations.
+A library of lit-html directives and decorators for handling async operations.
 
 **✨ Key Features:**
 - **Drop promises and async generators directly into templates** - No wrapper components needed
+- **`@sync` decorator for reactive properties** - Automatically sync async state to properties
 - **Works everywhere** - Child content, attributes, and properties
 - **Share generators across multiple directives** - Cached values broadcast to all subscribers
 - **Type-safe** - Full TypeScript support with automatic type inference
@@ -60,9 +61,11 @@ A directive that renders the resolved value of a promise or an async generator.
 track<T>(state: Promise<T> | AsyncIterable<T> | T, transform?: (value: T) => unknown): unknown
 ```
 
-**Ownership Policy**: `track` does not own the async sources it receives. It will not call `return()` on generators or `abort()` on promises. When disconnected from the DOM, it simply unsubscribes and ignores future values (via internal generation guard). You are responsible for managing the lifecycle of your async sources.
+**Ownership Policy**: `track` does not own the async sources it receives. It will not call `return()` on generators or `abort()` on promises. When disconnected from the DOM, it simply unsubscribes and ignores future values. You are responsible for managing the lifecycle of your async sources.
 
-**Error Handling**: If a promise rejects or an async generator throws, `track` logs the error to the console and renders `undefined`. The DOM content remains unchanged until a successful value arrives.
+**Error Handling**: If a promise rejects or an async generator throws, `track` logs the error to the console and renders `undefined`.
+
+**Re-render Behavior**: `track` caches the last value received. When the component re-renders but the generator hasn't yielded new values, `track` displays the last cached value instead of showing nothing.
 
 #### Child Content
 
@@ -161,13 +164,13 @@ class MyElement extends LitElement {
 }
 ```
 
-All three `track()` directives will display the same count value at the same time. The generator's values are cached and broadcast to all subscribers.
+All three `track()` directives will display the same count value at the same time.
 
-**Value Replay**: When a new `track()` subscribes to an already-running generator, it immediately receives the last yielded value (if any) and then continues to receive new values. This ensures all subscribers stay synchronized without waiting for the next `yield`.
+**How it works**: The generator runs once, and each yielded value is cached and broadcast to all `track()` directives using that generator. When a new `track()` subscribes to an already-running generator, it immediately receives the last yielded value (if any), ensuring all subscribers stay synchronized.
 
 ### `loading`
 
-A helper function that wraps a promise with `loading()` to show a fallback value while the promise is pending.
+A helper that shows a fallback value while waiting for async operations to complete.
 
 ```ts
 loading<T>(state: Promise<T> | AsyncIterable<T> | T, loadingValue: unknown, transform?: (value: T) => unknown): AsyncIterable<unknown>
@@ -186,4 +189,59 @@ You can also provide a custom template for the loading state:
 const loadingTemplate = html`<span>Please wait...</span>`;
 
 html`${track(loading(fetchData(), loadingTemplate))}`
+```
+
+### `@sync`
+
+A decorator that automatically syncs a property with values from a Promise or AsyncIterable.
+
+```ts
+sync<T>(stateFactory: (this: any) => Promise<T> | AsyncIterable<T> | T): PropertyDecorator
+```
+
+**Requirements**:
+- Must use the `accessor` keyword with the property
+- TypeScript must NOT have `experimentalDecorators: true` (uses standard decorators)
+
+**Basic Example**:
+
+```ts
+import { LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import { sync } from 'lit-async';
+
+@customElement('my-element')
+class MyElement extends LitElement {
+  // Sync an async generator
+  @sync(() => (async function*() {
+    for (let i = 0; ; i++) {
+      yield i;
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  })())
+  accessor count: number | undefined;
+
+  render() {
+    return html`<p>Count: ${this.count ?? 'Loading...'}</p>`;
+  }
+}
+```
+
+**Using `this` context**:
+
+```ts
+@customElement('user-profile')
+class UserProfile extends LitElement {
+  @property() userId!: string;
+
+  // Factory function can access 'this'
+  @sync(function() {
+    return fetch(`/api/users/${this.userId}`).then(r => r.json());
+  })
+  accessor userData: User | undefined;
+
+  render() {
+    return html`<p>User: ${this.userData?.name ?? 'Loading...'}</p>`;
+  }
+}
 ```

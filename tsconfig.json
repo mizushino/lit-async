@@ -3,7 +3,6 @@
     "target": "es2021",
     "module": "esnext",
     "moduleResolution": "node",
-    "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "lib": ["es2021", "dom"],
     "outDir": "./dist",
