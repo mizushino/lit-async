@@ -1,6 +1,6 @@
 {
   "name": "lit-async",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Async directives and helpers for Lit.",
   "type": "module",
   "main": "./dist/index.js",
@@ -19,6 +19,10 @@
     "./loading": {
       "types": "./dist/loading.d.ts",
       "default": "./dist/loading.js"
+    },
+    "./decorator": {
+      "types": "./dist/decorator.d.ts",
+      "default": "./dist/decorator.js"
     }
   },
   "files": [
@@ -38,7 +42,9 @@
     "async",
     "promise",
     "directive",
-    "web-components"
+    "decorator",
+    "web-components",
+    "async-generator"
   ],
   "author": "mizushino",
   "license": "MIT",
