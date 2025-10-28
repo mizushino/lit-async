@@ -11,7 +11,8 @@ class TrackDirective<T = unknown> extends AsyncDirective {
   private state?: AsyncState<T>;
   private transform: ((value: T) => unknown) | undefined;
   private subscriber?: (value: unknown) => void;
-  private lastValue: unknown = noChange;
+  private lastRawValue: T | undefined = undefined;
+  private hasValue = false;
 
   render(state: AsyncState<T>, transform?: (value: T) => unknown): unknown {
     if (this.state !== state) {
@@ -21,38 +22,52 @@ class TrackDirective<T = unknown> extends AsyncDirective {
 
       this.state = state;
       this.transform = transform;
+      this.hasValue = false;
 
       if (isPromise(state)) {
         state
           .then((value) => {
             if (this.state === state) {
+              this.lastRawValue = value;
+              this.hasValue = true;
               const transformed = this.transform ? this.transform(value) : value;
-              this.lastValue = transformed;
               this.setValue(transformed);
             }
           })
           .catch((error) => {
             console.error('Error resolving Promise:', error);
             if (this.state === state) {
-              this.lastValue = undefined;
+              this.lastRawValue = undefined;
+              this.hasValue = true;
               this.setValue(undefined);
             }
           });
       } else if (isAsyncIterable(state)) {
         this.subscriber = (value: T) => {
           if (this.state === state) {
+            this.lastRawValue = value;
+            this.hasValue = true;
             const transformed = this.transform ? this.transform(value) : value;
-            this.lastValue = transformed;
             this.setValue(transformed);
           }
         };
         subscribe(state, this.subscriber);
       } else {
-        return this.transform ? this.transform(state) : state;
+        // Synchronous value
+        this.lastRawValue = state;
+        this.hasValue = true;
+        this.transform = transform;
+        return transform ? transform(state) : state;
       }
-      return this.lastValue;
+      return noChange;
     }
-    return this.lastValue;
+
+    this.transform = transform;
+    if (this.hasValue) {
+      return this.transform ? this.transform(this.lastRawValue!) : this.lastRawValue;
+    }
+
+    return noChange;
   }
 
   disconnected(): void {
