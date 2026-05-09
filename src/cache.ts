@@ -1,19 +1,21 @@
-interface IterableCache {
-  value: unknown;
-  subscribers: Set<(value: unknown) => void>;
-  iterator: AsyncIterator<unknown> | null;
+interface IterableCache<T> {
+  value: T | undefined;
+  subscribers: Set<(value: T) => void>;
+  iterator: AsyncIterator<T> | null;
 }
 
 /**
  * Cache for AsyncIterables to allow multiple consumers to share the same generator.
  */
-const iterableCache = new WeakMap<AsyncIterable<unknown>, IterableCache>();
+const iterableCache = new WeakMap<AsyncIterable<unknown>, IterableCache<unknown>>();
 
-export function subscribe(
-  iterable: AsyncIterable<unknown>,
-  callback: (value: unknown) => void
+export function subscribe<T>(
+  iterable: AsyncIterable<T>,
+  callback: (value: T) => void
 ): void {
-  let cache = iterableCache.get(iterable);
+  let cache = iterableCache.get(iterable as AsyncIterable<unknown>) as
+    | IterableCache<T>
+    | undefined;
 
   if (!cache) {
     cache = {
@@ -21,7 +23,7 @@ export function subscribe(
       subscribers: new Set(),
       iterator: null,
     };
-    iterableCache.set(iterable, cache);
+    iterableCache.set(iterable as AsyncIterable<unknown>, cache as IterableCache<unknown>);
     cache.iterator = iterable[Symbol.asyncIterator]();
     startIterator(iterable, cache);
   }
@@ -33,23 +35,25 @@ export function subscribe(
   }
 }
 
-export function unsubscribe(
-  iterable: AsyncIterable<unknown>,
-  callback: (value: unknown) => void
+export function unsubscribe<T>(
+  iterable: AsyncIterable<T>,
+  callback: (value: T) => void
 ): void {
-  const cache = iterableCache.get(iterable);
+  const cache = iterableCache.get(iterable as AsyncIterable<unknown>) as
+    | IterableCache<T>
+    | undefined;
   if (!cache) return;
 
   cache.subscribers.delete(callback);
 
   if (cache.subscribers.size === 0) {
-    iterableCache.delete(iterable);
+    iterableCache.delete(iterable as AsyncIterable<unknown>);
   }
 }
 
-function startIterator(
-  iterable: AsyncIterable<unknown>,
-  cache: IterableCache
+function startIterator<T>(
+  iterable: AsyncIterable<T>,
+  cache: IterableCache<T>
 ): void {
   const getNextValue = (): void => {
     if (!cache.iterator) return;
@@ -57,7 +61,7 @@ function startIterator(
     cache.iterator
       .next()
       .then((result) => {
-        const currentCache = iterableCache.get(iterable);
+        const currentCache = iterableCache.get(iterable as AsyncIterable<unknown>);
         if (currentCache !== cache) return;
 
         if (!result.done) {
@@ -68,10 +72,10 @@ function startIterator(
       })
       .catch((error) => {
         console.error('Error in AsyncIterable:', error);
-        const currentCache = iterableCache.get(iterable);
+        const currentCache = iterableCache.get(iterable as AsyncIterable<unknown>);
         if (currentCache !== cache) return;
 
-        cache.subscribers.forEach((subscriber) => subscriber(undefined));
+        cache.subscribers.forEach((subscriber) => subscriber(undefined as T));
       });
   };
   getNextValue();

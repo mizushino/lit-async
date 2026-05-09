@@ -10,7 +10,7 @@ import { isAsyncIterable, isPromise, type AsyncState } from './types.js';
 class TrackDirective<T = unknown> extends AsyncDirective {
   private state?: AsyncState<T>;
   private transform: ((value: T) => unknown) | undefined;
-  private subscriber?: (value: unknown) => void;
+  private subscriber?: (value: T) => void;
   private lastRawValue: T | undefined = undefined;
   private hasValue = false;
 
@@ -43,7 +43,7 @@ class TrackDirective<T = unknown> extends AsyncDirective {
             }
           });
       } else if (isAsyncIterable(state)) {
-        this.subscriber = (value: T) => {
+        const subscriber = (value: T) => {
           if (this.state === state) {
             this.lastRawValue = value;
             this.hasValue = true;
@@ -51,7 +51,8 @@ class TrackDirective<T = unknown> extends AsyncDirective {
             this.setValue(transformed);
           }
         };
-        subscribe(state, this.subscriber);
+        this.subscriber = subscriber;
+        subscribe(state, subscriber);
       } else {
         // Synchronous value
         this.lastRawValue = state;
@@ -83,7 +84,10 @@ class TrackDirective<T = unknown> extends AsyncDirective {
   }
 }
 
-const trackDirective = directive(TrackDirective);
+const trackDirective = directive(TrackDirective) as <T = unknown>(
+  state: AsyncState<T>,
+  transform?: (value: T) => unknown
+) => unknown;
 
 export const track = <T = unknown>(
   state: AsyncState<T>,

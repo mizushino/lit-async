@@ -103,8 +103,8 @@ export function sync<T>(
   ): ClassAccessorDecoratorResult<any, T | undefined> {
     const key = context.name as string;
 
-    context.addInitializer(function (this: ReactiveElement) {
-      new SyncController(this, key, stateFactory);
+    context.addInitializer(function (this: unknown) {
+      new SyncController(this as ReactiveElement, key, stateFactory);
     });
 
     return {
